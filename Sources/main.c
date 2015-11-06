@@ -6,6 +6,7 @@
 #include "fsl_gpio_driver.h"
 #include "fsl_lptmr_driver.h"
 #include "ledctl.h"
+#include "bpm.h"
 #include <stdio.h>
 
 #define BUFFER_LENGTH NUM_LEDS
