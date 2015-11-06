@@ -59,7 +59,7 @@ gpio_input_pin_user_config_t switchPins[] = {
     .config.isPullEnable = true,
     .config.pullSelect = kPortPullUp,
     .config.isPassiveFilterEnabled = false,
-    .config.interrupt = kPortIntDisabled
+    .config.interrupt = kPortIntFallingEdge
   },
   {
     .pinName = kGpioSW3,
