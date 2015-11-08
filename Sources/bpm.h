@@ -1,8 +1,5 @@
 #ifndef BPM_H
 #define BPM_H
-#include "fsl_gpio_driver.h"
-#include "fsl_pit_driver.h"
-#include "board.h"
 
 enum bpm_modes {
 	BPM_MODE_RUN,
@@ -11,8 +8,10 @@ enum bpm_modes {
 };
 
 struct bpm_dev {
-	void (*callback)(void *data);
+	void (*callback)(void);
 	enum bpm_modes mode;
 };
+
+void bpm_init(void (*callback)(void));
 
 #endif /* BPM_H */

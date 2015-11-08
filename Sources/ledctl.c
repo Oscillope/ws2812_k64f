@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "fsl_gpio_driver.h"
+#include "board.h"
 #include "ledctl.h"
-struct led_array array;
+static struct led_array array;
 
 /*
  * RGB <-> HSV functions taken from:
@@ -90,7 +92,6 @@ void ledctl_make_fade(struct led_pixel *dest, hsv color1, hsv color2, int num_st
 {
 	unsigned char step;
 	unsigned char hue = color1.h + phase;
-	dest->profile = malloc(sizeof(rgb) * num_steps);
 	dest->len = num_steps;
 	step = (color1.h - color2.h) / num_steps;
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
@@ -108,10 +109,42 @@ void ledctl_test_swoosh(void)
 	}
 }
 
+void ledctl_make_flasher(int dir)
+{
+	int i;
+	if(dir > 0) {
+		for(i = 0; i < (NUM_LEDS << 2); i++) {
+			array.leds[i].profile[0] = (rgb){0xff, 0x55, 0x00};
+			array.leds[i].profile[1] = (rgb){0x00, 0x00, 0x00};
+			array.leds[i].len = 2;
+		}
+		for(; i < NUM_LEDS; i++) {
+			array.leds[i].profile[0] = (rgb){0xff, 0xff, 0xff};
+			array.leds[i].len = 1;
+		}
+	} else if (dir < 0) {
+		for(i = 0; i < (3 * (NUM_LEDS << 2)); i++) {
+			array.leds[i].profile[0] = (rgb){0xff, 0xff, 0xff};
+			array.leds[i].len = 1;
+		}
+		for(; i < NUM_LEDS; i++) {
+			array.leds[i].profile[0] = (rgb){0xff, 0x55, 0x00};
+			array.leds[i].profile[1] = (rgb){0x00, 0x00, 0x00};
+			array.leds[i].len = 2;
+		}
+	} else {
+		for(i = 0; i < NUM_LEDS; i++) {
+			array.leds[i].profile[0] = (rgb){0xff, 0x55, 0x00};
+			array.leds[i].profile[1] = (rgb){0x00, 0x00, 0x00};
+			array.leds[i].len = 2;
+		}
+	}
+}
+
 void ledctl_update(void)
 {
 	static char dir;
-	int i, j;
+	int i;
 	for(i = 0; i < array.num_leds; i++) {
 		array.buffer[i] = array.leds[i].profile[array.leds[i].idx];
 		array.leds[i].idx += dir ? 1 : -1;
@@ -125,15 +158,12 @@ void ledctl_update(void)
 			array.leds[i].idx = 0;
 		}
 	}
-	for(j = 0; j < array.speed; j++);
+	GPIO_DRV_TogglePinOutput(kGpioLED1);
 }
 
-void ledctl_init(rgb *super_buffer, int speed)
+void ledctl_init(rgb *super_buffer)
 {
-	static struct led_pixel pixels[NUM_LEDS];
 	array.buffer = super_buffer;
-	array.leds = pixels;
 	array.num_leds = NUM_LEDS;
-	array.speed = speed;
 	ledctl_test_swoosh();
 }

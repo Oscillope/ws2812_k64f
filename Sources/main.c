@@ -92,11 +92,11 @@ int main(void)
 
 	printf("\nHello World! \r\n");
 
-	ledctl_init(buffer, 999000);
+	ledctl_init(buffer);
+	bpm_init(ledctl_update);
 
 	while(1) {
-		ledctl_update();
-		GPIO_DRV_TogglePinOutput(kGpioLED1);
+		// Everything is using timers now.
 	}
 	return 0;
 }

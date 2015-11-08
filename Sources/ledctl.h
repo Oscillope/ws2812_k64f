@@ -16,19 +16,18 @@ typedef struct {
 } hsv;
 
 struct led_pixel {
-	rgb *profile;
+	rgb profile[256];
 	int len;
 	int idx;
 };
 
 struct led_array {
-	struct led_pixel *leds;
+	struct led_pixel leds[NUM_LEDS];
 	rgb *buffer;
 	int num_leds;
-	int speed;
 };
 
-void ledctl_init(rgb *super_buffer, int speed);
+void ledctl_init(rgb *super_buffer);
 void ledctl_update(void);
 
 #endif /* LEDCTL_H */
