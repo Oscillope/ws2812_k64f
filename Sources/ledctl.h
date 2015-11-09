@@ -15,19 +15,17 @@ typedef struct {
 	unsigned char v;
 } hsv;
 
-struct led_pixel {
-	rgb profile[256];
+struct led_array {
+	rgb leds[NUM_LEDS][256];
 	int len;
 	int idx;
-};
-
-struct led_array {
-	struct led_pixel leds[NUM_LEDS];
 	rgb *buffer;
 	int num_leds;
 };
 
 void ledctl_init(rgb *super_buffer);
 void ledctl_update(void);
+void ledctl_test_swoosh(void);
+void ledctl_make_flasher(int dir);
 
 #endif /* LEDCTL_H */

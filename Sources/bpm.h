@@ -10,8 +10,10 @@ enum bpm_modes {
 struct bpm_dev {
 	void (*callback)(void);
 	enum bpm_modes mode;
+	int div;
 };
 
+void bpm_update_div(int div);
 void bpm_init(void (*callback)(void));
 
 #endif /* BPM_H */

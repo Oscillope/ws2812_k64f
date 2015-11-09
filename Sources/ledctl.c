@@ -3,6 +3,7 @@
 #include "fsl_gpio_driver.h"
 #include "board.h"
 #include "ledctl.h"
+#include "bpm.h"
 static struct led_array array;
 
 /*
@@ -88,16 +89,15 @@ rgb hsv_to_rgb(hsv hsv)
     return rgb;
 }
 
-void ledctl_make_fade(struct led_pixel *dest, hsv color1, hsv color2, int num_steps, int phase)
+void ledctl_make_fade(rgb *dest, hsv color1, hsv color2, int num_steps, int phase)
 {
 	unsigned char step;
 	unsigned char hue = color1.h + phase;
-	dest->len = num_steps;
 	step = (color1.h - color2.h) / num_steps;
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
 	for(; num_steps > 0; num_steps--) {
 		hue += step;
-		dest->profile[num_steps - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
+		dest[num_steps - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
 	}
 }
 
@@ -105,58 +105,53 @@ void ledctl_test_swoosh(void)
 {
 	int i;
 	for(i = 0; i < array.num_leds; i++) {
-		ledctl_make_fade(&array.leds[i], (hsv){180, 255, 255}, (hsv){0, 255, 255}, 64, i * 10);
+		ledctl_make_fade(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 64, i * 12);
 	}
+	array.len = 64;
+	bpm_update_div(64);
 }
 
 void ledctl_make_flasher(int dir)
 {
 	int i;
 	if(dir > 0) {
-		for(i = 0; i < (NUM_LEDS << 2); i++) {
-			array.leds[i].profile[0] = (rgb){0xff, 0x55, 0x00};
-			array.leds[i].profile[1] = (rgb){0x00, 0x00, 0x00};
-			array.leds[i].len = 2;
+		for(i = 0; i < (NUM_LEDS >> 2); i++) {
+			array.leds[i][0] = (rgb){0xff, 0x00, 0x55};
+			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
 		for(; i < NUM_LEDS; i++) {
-			array.leds[i].profile[0] = (rgb){0xff, 0xff, 0xff};
-			array.leds[i].len = 1;
+			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
+			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
 	} else if (dir < 0) {
-		for(i = 0; i < (3 * (NUM_LEDS << 2)); i++) {
-			array.leds[i].profile[0] = (rgb){0xff, 0xff, 0xff};
-			array.leds[i].len = 1;
+		for(i = 0; i < (3 * (NUM_LEDS >> 2)); i++) {
+			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
+			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
 		for(; i < NUM_LEDS; i++) {
-			array.leds[i].profile[0] = (rgb){0xff, 0x55, 0x00};
-			array.leds[i].profile[1] = (rgb){0x00, 0x00, 0x00};
-			array.leds[i].len = 2;
+			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
+			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
 	} else {
 		for(i = 0; i < NUM_LEDS; i++) {
-			array.leds[i].profile[0] = (rgb){0xff, 0x55, 0x00};
-			array.leds[i].profile[1] = (rgb){0x00, 0x00, 0x00};
-			array.leds[i].len = 2;
+			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
+			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
 	}
+	array.len = 2;
 }
 
 void ledctl_update(void)
 {
-	static char dir;
 	int i;
 	for(i = 0; i < array.num_leds; i++) {
-		array.buffer[i] = array.leds[i].profile[array.leds[i].idx];
-		array.leds[i].idx += dir ? 1 : -1;
-		//if (i == 0)
-		//	printf("\nCurrent buffer: %d %d %d, idx %d\r\n", array.buffer[i].r, array.buffer[i].g, array.buffer[i].b, array.leds[i].idx);
-		if (array.leds[i].idx >= array.leds[i].len) {
-			dir = 0;
-			array.leds[i].idx = array.leds[i].len;
-		} else if (array.leds[i].idx <= 0) {
-			dir = 1;
-			array.leds[i].idx = 0;
-		}
+		array.buffer[i] = array.leds[i][array.idx];
+	}
+	array.idx++;
+	//if (i == 0)
+	//	printf("\nCurrent buffer: %d %d %d, idx %d\r\n", array.buffer[i].r, array.buffer[i].g, array.buffer[i].b, array.leds[i].idx);
+	if (array.idx >= array.len) {
+		array.idx = 0;
 	}
 	GPIO_DRV_TogglePinOutput(kGpioLED1);
 }
@@ -165,5 +160,4 @@ void ledctl_init(rgb *super_buffer)
 {
 	array.buffer = super_buffer;
 	array.num_leds = NUM_LEDS;
-	ledctl_test_swoosh();
 }

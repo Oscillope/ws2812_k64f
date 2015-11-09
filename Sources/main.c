@@ -94,6 +94,8 @@ int main(void)
 
 	ledctl_init(buffer);
 	bpm_init(ledctl_update);
+	ledctl_test_swoosh();
+	//ledctl_make_flasher(1);
 
 	while(1) {
 		// Everything is using timers now.
