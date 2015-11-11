@@ -13,7 +13,7 @@ static struct bpm_dev dev;
 void PIT0_IRQHandler(void* data)
 {
 	PIT_DRV_ClearIntFlag(0, 0);
-	GPIO_DRV_TogglePinOutput(kGpioLEDW);
+	GPIO_DRV_TogglePinOutput(kGpioLED2);
 	switch (dev.mode) {
 	case BPM_MODE_RUN:
 		if (dev.callback) {
@@ -50,7 +50,8 @@ void PORTC_IRQHandler(void)
 		if (learn_state == 3) {
 			uint64_t avg = 0;
 			avg = (times[0] + times[1] + times[2] + times[3]) >> 2;
-			PIT_DRV_SetTimerPeriodByCount(0, 0, avg / dev.div);
+			dev.rate = avg;
+			PIT_DRV_SetTimerPeriodByCount(0, 0, dev.rate / dev.div);
 			learn_state = 0;
 			dev.mode = BPM_MODE_RUN;
 			goto out;
@@ -65,9 +66,9 @@ out:
 
 void bpm_update_div(int div)
 {
-	dev.div = div;
 	PIT_DRV_StopTimer(0, 0);
-	PIT_DRV_SetTimerPeriodByCount(0, 0, PIT_DRV_ReadTimerCount(0, 0) / div);
+	dev.div = div;
+	PIT_DRV_SetTimerPeriodByCount(0, 0, dev.rate / dev.div);
 	PIT_DRV_StartTimer(0, 0);
 }
 
@@ -81,6 +82,7 @@ void bpm_init(void (*callback)(void))
 {
 	dev.callback = callback;
 	dev.mode = BPM_MODE_RUN;
+	dev.rate = BPM_DEFAULT_COUNT;
 	dev.div = 1;
 	PIT_DRV_Init(0, false);
 	PIT_DRV_InitChannel(0, 0, &pitInit);

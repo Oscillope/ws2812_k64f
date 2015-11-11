@@ -25,7 +25,7 @@ struct led_array {
 
 void ledctl_init(rgb *super_buffer);
 void ledctl_update(void);
-void ledctl_test_swoosh(void);
+void ledctl_make_swoosh(void);
 void ledctl_make_flasher(int dir);
 
 #endif /* LEDCTL_H */

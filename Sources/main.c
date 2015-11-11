@@ -41,7 +41,7 @@ void LPTMR0_IRQHandler(void)
 	while(len) {
 		int mask = 0x800000;
 		while(mask) {
-			int grb = buffer[len-1].g | (buffer[len-1].r << 8) | (buffer[len-1].b << 16);
+			int grb = buffer[len-1].b | (buffer[len-1].r << 8) | (buffer[len-1].g << 16);
 			//if (grb)
 			//	printf("\ngrb value: %08x\r\n", grb);
 			(grb & mask) ? output1() : output0();
@@ -51,6 +51,32 @@ void LPTMR0_IRQHandler(void)
 	}
 	GPIO_DRV_TogglePinOutput(kGpioLED3);
 	LPTMR_DRV_IRQHandler(LPTMR0_IDX);	// Reset timer
+}
+
+void PORTA_IRQHandler(void)
+{
+	if (GPIO_DRV_IsPinIntPending(kGpioSigL)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPinIntFlag(kGpioSigL);
+		ledctl_make_flasher(-1);
+	} else if (GPIO_DRV_IsPinIntPending(kGpioSigR)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
+		ledctl_make_flasher(1);
+	} else if (GPIO_DRV_IsPinIntPending(kGpioSW3)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPinIntFlag(kGpioSW3);
+		ledctl_make_swoosh();
+	}
+}
+
+void PORTB_IRQHandler(void)
+{
+	if (GPIO_DRV_IsPinIntPending(kGpioSig)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPinIntFlag(kGpioSig);
+		ledctl_make_flasher(0);
+	}
 }
 
 int main(void)
@@ -94,11 +120,10 @@ int main(void)
 
 	ledctl_init(buffer);
 	bpm_init(ledctl_update);
-	ledctl_test_swoosh();
-	//ledctl_make_flasher(1);
+	//ledctl_make_swoosh();
+
 
 	while(1) {
-		// Everything is using timers now.
 	}
 	return 0;
 }

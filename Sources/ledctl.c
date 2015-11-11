@@ -93,15 +93,20 @@ void ledctl_make_fade(rgb *dest, hsv color1, hsv color2, int num_steps, int phas
 {
 	unsigned char step;
 	unsigned char hue = color1.h + phase;
+	int i;
 	step = (color1.h - color2.h) / num_steps;
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
-	for(; num_steps > 0; num_steps--) {
+	for(i = num_steps; i > 0; i--) {
 		hue += step;
-		dest[num_steps - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
+		dest[i - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
+	}
+	for(i = num_steps; i < num_steps << 1; i++) {
+		hue -= step;
+		dest[i - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
 	}
 }
 
-void ledctl_test_swoosh(void)
+void ledctl_make_swoosh(void)
 {
 	int i;
 	for(i = 0; i < array.num_leds; i++) {
@@ -116,13 +121,14 @@ void ledctl_make_flasher(int dir)
 	int i;
 	if(dir > 0) {
 		for(i = 0; i < (NUM_LEDS >> 2); i++) {
-			array.leds[i][0] = (rgb){0xff, 0x00, 0x55};
+			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
 			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
 		for(; i < NUM_LEDS; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
+		array.len = 2;
 	} else if (dir < 0) {
 		for(i = 0; i < (3 * (NUM_LEDS >> 2)); i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
@@ -132,13 +138,14 @@ void ledctl_make_flasher(int dir)
 			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
 			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
+		array.len = 2;
 	} else {
 		for(i = 0; i < NUM_LEDS; i++) {
-			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
-			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
+			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 		}
+		array.len = 1;
 	}
-	array.len = 2;
+	bpm_update_div(1);
 }
 
 void ledctl_update(void)
