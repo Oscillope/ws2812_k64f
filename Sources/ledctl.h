@@ -27,5 +27,6 @@ void ledctl_init(rgb *super_buffer);
 void ledctl_update(void);
 void ledctl_make_swoosh(void);
 void ledctl_make_flasher(int dir);
+void ledctl_make_cylon(rgb color);
 
 #endif /* LEDCTL_H */

@@ -120,8 +120,7 @@ int main(void)
 
 	ledctl_init(buffer);
 	bpm_init(ledctl_update);
-	//ledctl_make_swoosh();
-
+	ledctl_make_cylon((rgb){0xff, 0x00, 0x00});
 
 	while(1) {
 	}
