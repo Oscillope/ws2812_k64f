@@ -203,7 +203,7 @@ void ledctl_make_flasher(int dir)
 		}
 		array.len = 2;
 	} else if (dir < 0) {
-		for(i = 0; i < 23; i++) {
+		for(i = 0; i < 20; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
