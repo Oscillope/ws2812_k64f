@@ -59,14 +59,14 @@ gpio_input_pin_user_config_t switchPins[] = {
     .config.isPullEnable = true,
     .config.pullSelect = kPortPullUp,
     .config.isPassiveFilterEnabled = false,
-    .config.interrupt = kPortIntFallingEdge
+    .config.interrupt = kPortIntDisabled
   },
   {
     .pinName = kGpioSW3,
     .config.isPullEnable = true,
     .config.pullSelect = kPortPullUp,
     .config.isPassiveFilterEnabled = false,
-    .config.interrupt = kPortIntFallingEdge
+    .config.interrupt = kPortIntDisabled
   },
   {
     .pinName = kGpioSigR,
@@ -84,6 +84,27 @@ gpio_input_pin_user_config_t switchPins[] = {
   },
   {
 	.pinName = kGpioSig,
+	.config.isPullEnable = true,
+	.config.pullSelect = kPortPullUp,
+	.config.isPassiveFilterEnabled = true,
+	.config.interrupt = kPortIntFallingEdge
+  },
+  {
+	.pinName = kGpioBPMBTN,
+	.config.isPullEnable = true,
+	.config.pullSelect = kPortPullUp,
+	.config.isPassiveFilterEnabled = true,
+	.config.interrupt = kPortIntFallingEdge
+  },
+  {
+	.pinName = kGpioBTN1,
+	.config.isPullEnable = true,
+	.config.pullSelect = kPortPullUp,
+	.config.isPassiveFilterEnabled = true,
+	.config.interrupt = kPortIntFallingEdge
+  },
+  {
+	.pinName = kGpioBTN2,
 	.config.isPullEnable = true,
 	.config.pullSelect = kPortPullUp,
 	.config.isPassiveFilterEnabled = true,
@@ -137,6 +158,13 @@ const gpio_output_pin_user_config_t outPins[] = {
 	.config.slewRate = kPortFastSlewRate,
 	.config.isOpenDrainEnabled = false,
 	.config.driveStrength = kPortLowDriveStrength,
+  },
+  {
+	.pinName = kGpioBPMLED,
+	.config.outputLogic = 1,
+	.config.slewRate = kPortFastSlewRate,
+	.config.isOpenDrainEnabled = false,
+	.config.driveStrength = kPortHighDriveStrength,
   },
   {
     .pinName = GPIO_PINS_OUT_OF_RANGE,

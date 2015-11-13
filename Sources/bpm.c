@@ -13,7 +13,7 @@ static struct bpm_dev dev;
 void PIT0_IRQHandler(void* data)
 {
 	PIT_DRV_ClearIntFlag(0, 0);
-	GPIO_DRV_TogglePinOutput(kGpioLED2);
+	GPIO_DRV_TogglePinOutput(kGpioBPMLED);
 	switch (dev.mode) {
 	case BPM_MODE_RUN:
 		if (dev.callback) {
@@ -33,10 +33,13 @@ void PIT0_IRQHandler(void* data)
 
 void PORTC_IRQHandler(void)
 {
-	if (GPIO_DRV_IsPinIntPending(kGpioSW2)) {
+	if (GPIO_DRV_IsPinIntPending(kGpioBPMBTN)) {
 		static int learn_state;
 		static uint32_t times[4];
-		GPIO_DRV_ClearPinIntFlag(kGpioSW2);
+		int i;
+		for(i = 0; i < 0xffff; i++);
+		GPIO_DRV_ClearPinIntFlag(kGpioBPMBTN);
+		if (GPIO_DRV_ReadPinInput(kGpioBPMBTN)) return;
 		// enter "learn" mode
 		if (dev.mode != BPM_MODE_LEARN) {
 			learn_state = 0;
@@ -59,7 +62,6 @@ void PORTC_IRQHandler(void)
 		PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT);
 		learn_state++;
 out:
-		GPIO_SW_DELAY;
 		PIT_DRV_StartTimer(0, 0);
 	}
 }

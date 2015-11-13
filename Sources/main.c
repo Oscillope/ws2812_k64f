@@ -63,10 +63,6 @@ void PORTA_IRQHandler(void)
 		GPIO_SW_DELAY;
 		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
 		ledctl_make_flasher(1);
-	} else if (GPIO_DRV_IsPinIntPending(kGpioSW3)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSW3);
-		ledctl_make_swoosh();
 	}
 }
 
@@ -76,6 +72,26 @@ void PORTB_IRQHandler(void)
 		GPIO_SW_DELAY;
 		GPIO_DRV_ClearPinIntFlag(kGpioSig);
 		ledctl_make_flasher(0);
+	}
+}
+
+void PORTD_IRQHandler(void)
+{
+	static int col;
+	static int state;
+	GPIO_DRV_TogglePinOutput(kGpioLED2);
+	if (GPIO_DRV_IsPinIntPending(kGpioBTN1)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPinIntFlag(kGpioBTN1);
+		if (state < NUM_RAINBOW_STATES) state++;
+		else state = 0;
+		ledctl_make_swoosh(state);
+	} else if (GPIO_DRV_IsPinIntPending(kGpioBTN2)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPinIntFlag(kGpioBTN2);
+		if (col < NUM_COLORS) col++;
+		else col = 0;
+		ledctl_make_cylon(colors[col]);
 	}
 }
 
@@ -120,7 +136,7 @@ int main(void)
 
 	ledctl_init(buffer);
 	bpm_init(ledctl_update);
-	ledctl_make_cylon((rgb){0xff, 0x00, 0x00});
+	ledctl_make_swoosh(0);
 
 	while(1) {
 	}

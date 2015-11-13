@@ -97,7 +97,11 @@ void ledctl_make_fade(rgb *dest, hsv color1, hsv color2, int num_steps, int phas
 	step = (color1.h - color2.h) / num_steps;
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
 	for(i = num_steps; i > 0; i--) {
-		hue += step;
+		if (hue + step <= 255) {
+			hue += step;
+		} else {
+			hue = step - (255 - hue);
+		}
 		dest[i - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
 	}
 }
@@ -110,23 +114,60 @@ void ledctl_make_fade_bounce(rgb *dest, hsv color1, hsv color2, int num_steps, i
 	step = (color1.h - color2.h) / (num_steps >> 1);
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
 	for(i = num_steps; i > (num_steps >> 1); i--) {
-		hue += step;
+		if (hue + step <= 255) {
+			hue += step;
+		} else {
+			hue = step - (255 - hue);
+		}
 		dest[i - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
 	}
 	for(; i > 0; i--) {
-		hue -= step;
+		if (hue - step >= 0) {
+			hue -= step;
+		} else {
+			hue = 255 - (step - hue);
+		}
 		dest[i - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
 	}
 }
 
-void ledctl_make_swoosh(void)
+void ledctl_make_swoosh(int state)
 {
 	int i;
-	for(i = 0; i < array.num_leds; i++) {
-		ledctl_make_fade_bounce(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 128, i * 12);
+	switch (state) {
+	case 0:
+		for(i = 0; i < array.num_leds; i++) {
+			ledctl_make_fade(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 64, i * 4);
+		}
+		array.len = 64;
+		bpm_update_div(64);
+		break;
+	case 1:
+		for(i = 0; i < array.num_leds; i++) {
+			ledctl_make_fade_bounce(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 128, i * 8);
+		}
+		array.len = 128;
+		bpm_update_div(64);
+		break;
+	case 2:
+		for(i = 0; i < array.num_leds; i++) {
+			int j;
+			for(j = 0; j < i; j++) {
+				array.leds[j][i] = (rgb){0, 0, 0};
+			}
+		}
+		for(i = array.num_leds; i < (array.num_leds << 1); i++) {
+			int j;
+			for(j = 0; j < (i - array.num_leds); j++) {
+				array.leds[j][i] = hsv_to_rgb((hsv){j * 8, 255, 255});
+			}
+			for(; j < array.num_leds; j++) {
+				array.leds[j][i] = (rgb){0, 0, 0};
+			}
+		}
+		array.len = array.num_leds << 1;
+		bpm_update_div(32);
 	}
-	array.len = 128;
-	bpm_update_div(64);
 }
 
 void ledctl_make_cylon(rgb color)
@@ -145,39 +186,49 @@ void ledctl_make_cylon(rgb color)
 		array.leds[array.num_leds - i][i + array.num_leds] = color;
 	}
 	array.len = array.num_leds << 1;
-	bpm_update_div(array.num_leds >> 1);
+	bpm_update_div(array.num_leds);
 }
 
 void ledctl_make_flasher(int dir)
 {
 	int i;
 	if(dir > 0) {
-		for(i = 0; i < (NUM_LEDS >> 2); i++) {
+		for(i = 0; i < 9; i++) {
 			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
 			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
-		for(; i < NUM_LEDS; i++) {
+		for(; i < array.num_leds; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
 		array.len = 2;
 	} else if (dir < 0) {
-		for(i = 0; i < (3 * (NUM_LEDS >> 2)); i++) {
+		for(i = 0; i < 23; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
-		for(; i < NUM_LEDS; i++) {
+		for(; i < array.num_leds; i++) {
 			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
 			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
 		array.len = 2;
 	} else {
-		for(i = 0; i < NUM_LEDS; i++) {
+		for(i = 0; i < array.num_leds; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 		}
 		array.len = 1;
 	}
-	bpm_update_div(2);
+	bpm_update_div(1);
+}
+
+void ledctl_strobe(rgb color) {
+	int i;
+	for(i = 0; i < array.num_leds; i++) {
+		array.leds[i][0] = color;
+		array.leds[i][1] = (rgb){0, 0, 0};
+	}
+	array.len = 2;
+	bpm_update_div(256);
 }
 
 void ledctl_update(void)
@@ -187,8 +238,6 @@ void ledctl_update(void)
 		array.buffer[i] = array.leds[i][array.idx];
 	}
 	array.idx++;
-	//if (i == 0)
-	//	printf("\nCurrent buffer: %d %d %d, idx %d\r\n", array.buffer[i].r, array.buffer[i].g, array.buffer[i].b, array.leds[i].idx);
 	if (array.idx >= array.len) {
 		array.idx = 0;
 	}

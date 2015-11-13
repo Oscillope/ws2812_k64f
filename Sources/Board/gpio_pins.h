@@ -69,7 +69,7 @@ extern const gpio_output_pin_user_config_t outPins[];
 
 /*! @brief Pin names */
 enum _gpio_pins_pinNames{
-  kGpioSW2      = GPIO_MAKE_PIN(GPIOC_IDX, 6U),
+  kGpioSW2      = GPIO_MAKE_PIN(GPIOC_IDX, 8U),
   kGpioSW3      = GPIO_MAKE_PIN(GPIOA_IDX, 4U),
   kGpioSigR     = GPIO_MAKE_PIN(GPIOA_IDX, 2U),
   kGpioSigL     = GPIO_MAKE_PIN(GPIOA_IDX, 1U),
@@ -79,6 +79,10 @@ enum _gpio_pins_pinNames{
   kGpioLED2     = GPIO_MAKE_PIN(GPIOB_IDX, 22U),
   kGpioLED3     = GPIO_MAKE_PIN(GPIOB_IDX, 21U),
   kGpioData     = GPIO_MAKE_PIN(GPIOC_IDX, 10U),
+  kGpioBPMLED   = GPIO_MAKE_PIN(GPIOE_IDX, 24U),
+  kGpioBPMBTN   = GPIO_MAKE_PIN(GPIOC_IDX, 3U),
+  kGpioBTN1     = GPIO_MAKE_PIN(GPIOD_IDX, 0U),
+  kGpioBTN2     = GPIO_MAKE_PIN(GPIOD_IDX, 2U),
 };
 #endif
 
