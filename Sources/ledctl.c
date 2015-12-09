@@ -96,7 +96,7 @@ void ledctl_make_fade(rgb *dest, hsv color1, hsv color2, int num_steps, int phas
 	int i;
 	step = (color1.h - color2.h) / num_steps;
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
-	for(i = num_steps; i > 0; i--) {
+	for (i = num_steps; i > 0; i--) {
 		if (hue + step <= 255) {
 			hue += step;
 		} else {
@@ -113,7 +113,7 @@ void ledctl_make_fade_bounce(rgb *dest, hsv color1, hsv color2, int num_steps, i
 	int i;
 	step = (color1.h - color2.h) / (num_steps >> 1);
 	printf("\nMade fade %d in %d steps %d phase\r\n", step, num_steps, phase);
-	for(i = num_steps; i > (num_steps >> 1); i--) {
+	for (i = num_steps; i > (num_steps >> 1); i--) {
 		if (hue + step <= 255) {
 			hue += step;
 		} else {
@@ -121,7 +121,7 @@ void ledctl_make_fade_bounce(rgb *dest, hsv color1, hsv color2, int num_steps, i
 		}
 		dest[i - 1] = hsv_to_rgb((hsv){hue, color1.s, color1.v});
 	}
-	for(; i > 0; i--) {
+	for (; i > 0; i--) {
 		if (hue - step >= 0) {
 			hue -= step;
 		} else {
@@ -136,14 +136,14 @@ void ledctl_make_swoosh(int state)
 	int i;
 	switch (state) {
 	case 0:
-		for(i = 0; i < array.num_leds; i++) {
+		for (i = 0; i < array.num_leds; i++) {
 			ledctl_make_fade(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 64, i * 4);
 		}
 		array.len = 64;
 		bpm_update_div(64);
 		break;
 	case 1:
-		for(i = 0; i < array.num_leds; i++) {
+		for (i = 0; i < array.num_leds; i++) {
 			ledctl_make_fade_bounce(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 128, i * 8);
 		}
 		array.len = 128;
@@ -152,16 +152,16 @@ void ledctl_make_swoosh(int state)
 	case 2:
 		for(i = 0; i < array.num_leds; i++) {
 			int j;
-			for(j = 0; j < i; j++) {
+			for (j = 0; j < i; j++) {
 				array.leds[j][i] = (rgb){0, 0, 0};
 			}
 		}
 		for(i = array.num_leds; i < (array.num_leds << 1); i++) {
 			int j;
-			for(j = 0; j < (i - array.num_leds); j++) {
+			for (j = 0; j < (i - array.num_leds); j++) {
 				array.leds[j][i] = hsv_to_rgb((hsv){j * 8, 255, 255});
 			}
-			for(; j < array.num_leds; j++) {
+			for (; j < array.num_leds; j++) {
 				array.leds[j][i] = (rgb){0, 0, 0};
 			}
 		}
@@ -170,19 +170,20 @@ void ledctl_make_swoosh(int state)
 	}
 }
 
-void ledctl_make_cylon(rgb color)
+void ledctl_make_cylon(int col)
 {
+	rgb color = colors[col];
 	int i;
-	for(i = 0; i < array.num_leds; i++) {
+	for (i = 0; i < array.num_leds; i++) {
 		int j;
-		for(j = 0; j < array.num_leds << 1; j++) {
+		for (j = 0; j < array.num_leds << 1; j++) {
 			array.leds[i][j] = (rgb){0, 0, 0};
 		}
 	}
-	for(i = 0; i < array.num_leds; i++) {
+	for (i = 0; i < array.num_leds; i++) {
 		array.leds[i][i] = color;
 	}
-	for(; i > 0; i--) {
+	for (; i > 0; i--) {
 		array.leds[array.num_leds - i][i + array.num_leds] = color;
 	}
 	array.len = array.num_leds << 1;
@@ -193,27 +194,27 @@ void ledctl_make_flasher(int dir)
 {
 	int i;
 	if(dir > 0) {
-		for(i = 0; i < 9; i++) {
+		for (i = 0; i < 9; i++) {
 			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
 			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
-		for(; i < array.num_leds; i++) {
+		for (; i < array.num_leds; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
 		array.len = 2;
 	} else if (dir < 0) {
-		for(i = 0; i < 20; i++) {
+		for (i = 0; i < 20; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
 		}
-		for(; i < array.num_leds; i++) {
+		for (; i < array.num_leds; i++) {
 			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
 			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
 		}
 		array.len = 2;
 	} else {
-		for(i = 0; i < array.num_leds; i++) {
+		for (i = 0; i < array.num_leds; i++) {
 			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
 		}
 		array.len = 1;
@@ -223,7 +224,7 @@ void ledctl_make_flasher(int dir)
 
 void ledctl_strobe(rgb color) {
 	int i;
-	for(i = 0; i < array.num_leds; i++) {
+	for (i = 0; i < array.num_leds; i++) {
 		array.leds[i][0] = color;
 		array.leds[i][1] = (rgb){0, 0, 0};
 	}
@@ -234,7 +235,7 @@ void ledctl_strobe(rgb color) {
 void ledctl_update(void)
 {
 	int i;
-	for(i = 0; i < array.num_leds; i++) {
+	for (i = 0; i < array.num_leds; i++) {
 		array.buffer[i] = array.leds[i][array.idx];
 	}
 	array.idx++;

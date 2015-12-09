@@ -45,7 +45,7 @@ void PORTC_IRQHandler(void)
 		static int learn_state;
 		static uint32_t times[4];
 		int i;
-		for(i = 0; i < 0xffff; i++);
+		for (i = 0; i < 0xffff; i++);
 		GPIO_DRV_ClearPinIntFlag(kGpioBPMBTN);
 		if (GPIO_DRV_ReadPinInput(kGpioBPMBTN)) return;
 		// enter "learn" mode
@@ -99,9 +99,8 @@ void bpm_init(void (*callback)(void))
 	dev.mode = BPM_MODE_RUN;
 	dev.rate = BPM_DEFAULT_COUNT;
 	dev.div = 1;
-	PIT_DRV_Init(0, false);
 	PIT_DRV_InitChannel(0, 0, &pitInit);
-	PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT >> 8);
+	PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT);
 	PIT_DRV_StartTimer(0, 0);
 	PIT_DRV_InitChannel(0, 1, &pitInit);
 }
