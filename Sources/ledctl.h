@@ -2,7 +2,7 @@
 #define LEDCTL_H
 
 #define NUM_LEDS 30
-#define NUM_RAINBOW_STATES 2
+#define NUM_RAINBOW_STATES 3
 #define NUM_COLORS 6
 
 typedef struct {

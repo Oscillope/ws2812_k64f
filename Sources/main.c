@@ -70,10 +70,12 @@ void PIT2_IRQHandler(void)
 		} else if (!GPIO_DRV_ReadPinInput(kGpioSigR)) {
 			callback = ledctl_make_flasher;
 			arg = 1;
-		} else if (!GPIO_DRV_ReadPinInput(kGpioSig)) {
-			callback = ledctl_make_flasher;
-			arg = 0;
 		}
+//		This code disabled until I get another button
+//		} else if (!GPIO_DRV_ReadPinInput(kGpioSig)) {
+//			callback = ledctl_make_flasher;
+//			arg = 0;
+//		}
 		if (!GPIO_DRV_ReadPinInput(kGpioBTN1)) {
 			if (state < NUM_RAINBOW_STATES) state++;
 			else state = 0;
@@ -86,6 +88,10 @@ void PIT2_IRQHandler(void)
 			callback = ledctl_make_cylon;
 			arg = col;
 		}
+		GPIO_DRV_ClearPinIntFlag(kGpioSigL);
+		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
+		GPIO_DRV_ClearPinIntFlag(kGpioBTN1);
+		GPIO_DRV_ClearPinIntFlag(kGpioBTN2);
 	}
 }
 
@@ -93,10 +99,8 @@ void PORTA_IRQHandler(void)
 {
 	if (GPIO_DRV_IsPinIntPending(kGpioSigL)) {
 		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSigL);
 	} else if (GPIO_DRV_IsPinIntPending(kGpioSigR)) {
 		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
 	}
 	PIT_DRV_StartTimer(0, 2);
 }
@@ -115,10 +119,8 @@ void PORTD_IRQHandler(void)
 	GPIO_DRV_TogglePinOutput(kGpioLED2);
 	if (GPIO_DRV_IsPinIntPending(kGpioBTN1)) {
 		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioBTN1);
 	} else if (GPIO_DRV_IsPinIntPending(kGpioBTN2)) {
 		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioBTN2);
 	}
 	PIT_DRV_StartTimer(0, 2);
 }

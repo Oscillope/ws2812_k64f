@@ -85,9 +85,9 @@ gpio_input_pin_user_config_t switchPins[] = {
   {
 	.pinName = kGpioSig,
 	.config.isPullEnable = true,
-	.config.pullSelect = kPortPullUp,
+	.config.pullSelect = kPortPullDown,		// Grounded
 	.config.isPassiveFilterEnabled = false,
-	.config.interrupt = kPortIntFallingEdge
+	.config.interrupt = kPortIntDisabled	// Disabled until I get another button
   },
   {
 	.pinName = kGpioBPMBTN,

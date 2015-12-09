@@ -85,6 +85,9 @@ void bpm_update_div(int div)
 	PIT_DRV_SetTimerPeriodByCount(0, 0, dev.rate / dev.div);
 	PIT_DRV_StartTimer(0, 0);
 	PIT_DRV_StartTimer(0, 1);
+	if (dev.callback) {
+		dev.callback();
+	}
 }
 
 // Define device configuration.
@@ -100,7 +103,7 @@ void bpm_init(void (*callback)(void))
 	dev.rate = BPM_DEFAULT_COUNT;
 	dev.div = 1;
 	PIT_DRV_InitChannel(0, 0, &pitInit);
-	PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT);
+	PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT >> 4);
 	PIT_DRV_StartTimer(0, 0);
 	PIT_DRV_InitChannel(0, 1, &pitInit);
 }
