@@ -39,42 +39,36 @@ void PIT1_IRQHandler(void* data) {
 	}
 }
 
-void PORTC_IRQHandler(void)
+void bpm_button_callback(void)
 {
-	if (GPIO_DRV_IsPinIntPending(kGpioBPMBTN)) {
-		static int learn_state;
-		static uint32_t times[4];
-		int i;
-		for (i = 0; i < 0xffff; i++);
-		GPIO_DRV_ClearPinIntFlag(kGpioBPMBTN);
-		if (GPIO_DRV_ReadPinInput(kGpioBPMBTN)) return;
-		// enter "learn" mode
-		if (dev.mode != BPM_MODE_LEARN) {
-			learn_state = 0;
-			dev.mode = BPM_MODE_LEARN;
-			PIT_DRV_StopTimer(0, 0);
-			PIT_DRV_StopTimer(0, 1);
-			PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT);
-			goto out;
-		}
-		times[learn_state] = BPM_DEFAULT_COUNT - PIT_DRV_ReadTimerCount(0, 0);
+	static int learn_state;
+	static uint32_t times[4];
+	// enter "learn" mode
+	if (dev.mode != BPM_MODE_LEARN) {
+		learn_state = 0;
+		dev.mode = BPM_MODE_LEARN;
 		PIT_DRV_StopTimer(0, 0);
-		if (learn_state == 3) {
-			uint64_t avg = 0;
-			avg = (times[0] + times[1] + times[2] + times[3]) >> 2;
-			dev.rate = avg;
-			PIT_DRV_SetTimerPeriodByCount(0, 0, dev.rate / dev.div);
-			PIT_DRV_SetTimerPeriodByCount(0, 1, dev.rate);
-			learn_state = 0;
-			dev.mode = BPM_MODE_RUN;
-			PIT_DRV_StartTimer(0, 1);
-			goto out;
-		}
+		PIT_DRV_StopTimer(0, 1);
 		PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT);
-		learn_state++;
-out:
-		PIT_DRV_StartTimer(0, 0);
+		goto out;
 	}
+	times[learn_state] = BPM_DEFAULT_COUNT - PIT_DRV_ReadTimerCount(0, 0);
+	PIT_DRV_StopTimer(0, 0);
+	if (learn_state == 3) {
+		uint64_t avg = 0;
+		avg = (times[0] + times[1] + times[2] + times[3]) >> 2;
+		dev.rate = avg;
+		PIT_DRV_SetTimerPeriodByCount(0, 0, dev.rate / dev.div);
+		PIT_DRV_SetTimerPeriodByCount(0, 1, dev.rate);
+		learn_state = 0;
+		dev.mode = BPM_MODE_RUN;
+		PIT_DRV_StartTimer(0, 1);
+		goto out;
+	}
+	PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT);
+	learn_state++;
+out:
+	PIT_DRV_StartTimer(0, 0);
 }
 
 void bpm_update_div(int div)

@@ -88,10 +88,14 @@ void PIT2_IRQHandler(void)
 			callback = ledctl_make_cylon;
 			arg = col;
 		}
+		if (!GPIO_DRV_ReadPinInput(kGpioBPMBTN)) {
+			bpm_button_callback();
+		}
 		GPIO_DRV_ClearPinIntFlag(kGpioSigL);
 		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
 		GPIO_DRV_ClearPinIntFlag(kGpioBTN1);
 		GPIO_DRV_ClearPinIntFlag(kGpioBTN2);
+		GPIO_DRV_ClearPinIntFlag(kGpioBPMBTN);
 	}
 }
 
@@ -110,6 +114,15 @@ void PORTB_IRQHandler(void)
 	if (GPIO_DRV_IsPinIntPending(kGpioSig)) {
 		GPIO_SW_DELAY;
 		GPIO_DRV_ClearPinIntFlag(kGpioSig);
+	}
+	PIT_DRV_StartTimer(0, 2);
+}
+
+void PORTC_IRQHandler(void)
+{
+	if (GPIO_DRV_IsPinIntPending(kGpioBPMBTN)) {
+		GPIO_SW_DELAY;
+		GPIO_DRV_ClearPin(kGpioBPMBTN);
 	}
 	PIT_DRV_StartTimer(0, 2);
 }
