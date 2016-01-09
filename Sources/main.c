@@ -8,6 +8,7 @@
 #include "fsl_pit_driver.h"
 #include "ledctl.h"
 #include "bpm.h"
+#include "buttons.h"
 #include <stdio.h>
 
 #define BUFFER_LENGTH NUM_LEDS
@@ -15,8 +16,6 @@
 GPIO_Type *portc_base;
 uint32_t data_pin;
 rgb buffer[BUFFER_LENGTH] = {{ 0 }};
-void (*callback)(int) = NULL;
-int arg = 0;
 
 void output1(void) {
 	int time = 0;
@@ -55,94 +54,6 @@ void LPTMR0_IRQHandler(void)
 	GPIO_DRV_TogglePinOutput(kGpioLED3);
 	LPTMR_DRV_IRQHandler(LPTMR0_IDX);	// Reset timer
 }
-
-// Debounce timer
-void PIT2_IRQHandler(void)
-{
-	static int col;
-	static int state;
-	if (PIT_DRV_IsIntPending(0, 2)) {
-		PIT_DRV_ClearIntFlag(0, 2);
-		PIT_DRV_StopTimer(0, 2);
-		if (!GPIO_DRV_ReadPinInput(kGpioSigL)) {
-			callback = ledctl_make_flasher;
-			arg = -1;
-		} else if (!GPIO_DRV_ReadPinInput(kGpioSigR)) {
-			callback = ledctl_make_flasher;
-			arg = 1;
-		}
-//		This code disabled until I get another button
-//		} else if (!GPIO_DRV_ReadPinInput(kGpioSig)) {
-//			callback = ledctl_make_flasher;
-//			arg = 0;
-//		}
-		if (!GPIO_DRV_ReadPinInput(kGpioBTN1)) {
-			if (state < NUM_RAINBOW_STATES) state++;
-			else state = 0;
-			callback = ledctl_make_swoosh;
-			arg = state;
-		}
-		if (!GPIO_DRV_ReadPinInput(kGpioBTN2)) {
-			if (col < NUM_COLORS) col++;
-			else col = 0;
-			callback = ledctl_make_cylon;
-			arg = col;
-		}
-		if (!GPIO_DRV_ReadPinInput(kGpioBPMBTN)) {
-			bpm_button_callback();
-		}
-		GPIO_DRV_ClearPinIntFlag(kGpioSigL);
-		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
-		GPIO_DRV_ClearPinIntFlag(kGpioBTN1);
-		GPIO_DRV_ClearPinIntFlag(kGpioBTN2);
-		GPIO_DRV_ClearPinIntFlag(kGpioBPMBTN);
-	}
-}
-
-void PORTA_IRQHandler(void)
-{
-	if (GPIO_DRV_IsPinIntPending(kGpioSigL)) {
-		GPIO_SW_DELAY;
-	} else if (GPIO_DRV_IsPinIntPending(kGpioSigR)) {
-		GPIO_SW_DELAY;
-	}
-	PIT_DRV_StartTimer(0, 2);
-}
-
-void PORTB_IRQHandler(void)
-{
-	if (GPIO_DRV_IsPinIntPending(kGpioSig)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSig);
-	}
-	PIT_DRV_StartTimer(0, 2);
-}
-
-void PORTC_IRQHandler(void)
-{
-	if (GPIO_DRV_IsPinIntPending(kGpioBPMBTN)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPin(kGpioBPMBTN);
-	}
-	PIT_DRV_StartTimer(0, 2);
-}
-
-void PORTD_IRQHandler(void)
-{
-	GPIO_DRV_TogglePinOutput(kGpioLED2);
-	if (GPIO_DRV_IsPinIntPending(kGpioBTN1)) {
-		GPIO_SW_DELAY;
-	} else if (GPIO_DRV_IsPinIntPending(kGpioBTN2)) {
-		GPIO_SW_DELAY;
-	}
-	PIT_DRV_StartTimer(0, 2);
-}
-
-// Define device configuration.
-const pit_user_config_t pit2Init = {
-    .isInterruptEnabled = true, // Enable timer interrupt.
-    .periodUs = 100000U             // Set timer period to 100000us (100ms).
-};
 
 int main(void)
 {
@@ -184,17 +95,14 @@ int main(void)
 	printf("\nHello World! \r\n");
 
 	PIT_DRV_Init(0, false);
-	PIT_DRV_InitChannel(0, 2, &pit2Init);
 
+	buttons_init();
 	ledctl_init(buffer);
 	bpm_init(ledctl_update);
-	ledctl_make_swoosh(0);
+	ledctl_make_swoosh();
 
 	while (1) {
-		if (callback) {
-			callback(arg);
-			callback = NULL;
-		}
+		buttons_do_deferred();
 	}
 	return 0;
 }

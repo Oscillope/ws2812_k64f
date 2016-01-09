@@ -4,6 +4,7 @@
 #include "fsl_gpio_driver.h"
 #include "fsl_pit_driver.h"
 #include "board.h"
+#include "buttons.h"
 #include "bpm.h"
 
 #define BPM_DEFAULT_COUNT	0xffffffff
@@ -100,4 +101,5 @@ void bpm_init(void (*callback)(void))
 	PIT_DRV_SetTimerPeriodByCount(0, 0, BPM_DEFAULT_COUNT >> 4);
 	PIT_DRV_StartTimer(0, 0);
 	PIT_DRV_InitChannel(0, 1, &pitInit);
+	buttons_reg_callback(bpm_button_callback, kGpioBPMBTN);
 }

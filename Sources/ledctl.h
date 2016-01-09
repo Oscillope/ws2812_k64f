@@ -36,9 +36,5 @@ struct led_array {
 
 void ledctl_init(rgb *super_buffer);
 void ledctl_update(void);
-void ledctl_make_swoosh(int state);
-void ledctl_make_flasher(int dir);
-void ledctl_make_cylon(int col);
-void ledctl_strobe(rgb color);
 
 #endif /* LEDCTL_H */

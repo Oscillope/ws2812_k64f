@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "fsl_gpio_driver.h"
 #include "board.h"
+#include "buttons.h"
 #include "ledctl.h"
 #include "bpm.h"
 static struct led_array array;
@@ -131,9 +132,15 @@ void ledctl_make_fade_bounce(rgb *dest, hsv color1, hsv color2, int num_steps, i
 	}
 }
 
-void ledctl_make_swoosh(int state)
+void ledctl_make_swoosh(void)
 {
+	static char state;
 	int i;
+	if (state >= NUM_RAINBOW_STATES) {
+		state = 0;
+	} else {
+		state++;
+	}
 	switch (state) {
 	case 0:
 		for (i = 0; i < array.num_leds; i++) {
@@ -170,8 +177,14 @@ void ledctl_make_swoosh(int state)
 	}
 }
 
-void ledctl_make_cylon(int col)
+void ledctl_make_cylon(void)
 {
+	static int col;
+	if (col >= NUM_COLORS) {
+		col = 0;
+	} else {
+		col++;
+	}
 	rgb color = colors[col];
 	int i;
 	for (i = 0; i < array.num_leds; i++) {
@@ -190,35 +203,43 @@ void ledctl_make_cylon(int col)
 	bpm_update_div(array.num_leds);
 }
 
-void ledctl_make_flasher(int dir)
+void ledctl_make_solid(rgb color)
 {
 	int i;
-	if(dir > 0) {
-		for (i = 0; i < 9; i++) {
-			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
-			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
-		}
-		for (; i < array.num_leds; i++) {
-			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
-			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
-		}
-		array.len = 2;
-	} else if (dir < 0) {
-		for (i = 0; i < 20; i++) {
-			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
-			array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
-		}
-		for (; i < array.num_leds; i++) {
-			array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
-			array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
-		}
-		array.len = 2;
-	} else {
-		for (i = 0; i < array.num_leds; i++) {
-			array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
-		}
-		array.len = 1;
+	for (i = 0; i < array.num_leds; i++) {
+		array.leds[i][0] = color;
 	}
+	array.len = 1;
+	bpm_update_div(1);
+}
+
+void ledctl_make_l_flasher(void)
+{
+	int i;
+	for (i = 0; i < 9; i++) {
+		array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
+		array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
+	}
+	for (; i < array.num_leds; i++) {
+		array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
+		array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
+	}
+	array.len = 2;
+	bpm_update_div(1);
+}
+
+void ledctl_make_r_flasher(void)
+{
+	int i;
+	for (i = 0; i < 20; i++) {
+		array.leds[i][0] = (rgb){0xff, 0xff, 0xff};
+		array.leds[i][1] = (rgb){0xff, 0xff, 0xff};
+	}
+	for (; i < array.num_leds; i++) {
+		array.leds[i][0] = (rgb){0xff, 0x55, 0x00};
+		array.leds[i][1] = (rgb){0x00, 0x00, 0x00};
+	}
+	array.len = 2;
 	bpm_update_div(1);
 }
 
@@ -249,4 +270,9 @@ void ledctl_init(rgb *super_buffer)
 {
 	array.buffer = super_buffer;
 	array.num_leds = NUM_LEDS;
+
+	buttons_reg_callback(ledctl_make_l_flasher, kGpioSigL);
+	buttons_reg_callback(ledctl_make_r_flasher, kGpioSigR);
+	buttons_reg_callback(ledctl_make_swoosh, kGpioBTN1);
+	buttons_reg_callback(ledctl_make_cylon, kGpioBTN2);
 }
