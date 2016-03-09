@@ -86,7 +86,7 @@ void PORTD_IRQHandler(void)
 // Define device configuration.
 const pit_user_config_t pit2Init = {
     .isInterruptEnabled = true, // Enable timer interrupt.
-    .periodUs = 100000U             // Set timer period to 100000us (100ms).
+    .periodUs = 150000U             // Set timer period to 100000us (100ms).
 };
 
 void buttons_init(void) {
