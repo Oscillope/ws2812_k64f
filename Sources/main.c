@@ -42,8 +42,8 @@ void LPTMR0_IRQHandler(void)
 	int len = BUFFER_LENGTH;
 	while(len) {
 		int mask = 0x800000;
+		int grb = buffer[len-1].b | (buffer[len-1].r << 8) | (buffer[len-1].g << 16);
 		while (mask) {
-			int grb = buffer[len-1].b | (buffer[len-1].r << 8) | (buffer[len-1].g << 16);
 			//if (grb)
 			//	printf("\ngrb value: %08x\r\n", grb);
 			(grb & mask) ? output1() : output0();

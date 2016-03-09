@@ -174,6 +174,7 @@ void ledctl_make_swoosh(void)
 		}
 		array.len = array.num_leds << 1;
 		bpm_update_div(32);
+		break;
 	}
 }
 
@@ -271,8 +272,8 @@ void ledctl_init(rgb *super_buffer)
 	array.buffer = super_buffer;
 	array.num_leds = NUM_LEDS;
 
-	buttons_reg_callback(ledctl_make_l_flasher, kGpioSigL);
-	buttons_reg_callback(ledctl_make_r_flasher, kGpioSigR);
-	buttons_reg_callback(ledctl_make_swoosh, kGpioBTN1);
-	buttons_reg_callback(ledctl_make_cylon, kGpioBTN2);
+	buttons_reg_callback(ledctl_make_l_flasher, kGpioSigL, BUTTON_CB_SIGL);
+	buttons_reg_callback(ledctl_make_r_flasher, kGpioSigR, BUTTON_CB_SIGR);
+	buttons_reg_callback(ledctl_make_swoosh, kGpioBTN1, BUTTON_CB_BTN1);
+	buttons_reg_callback(ledctl_make_cylon, kGpioBTN2, BUTTON_CB_BTN2);
 }
