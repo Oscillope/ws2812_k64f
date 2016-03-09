@@ -5,8 +5,10 @@
 #include "fsl_debug_console.h"
 #include "fsl_gpio_driver.h"
 #include "fsl_lptmr_driver.h"
+#include "fsl_pit_driver.h"
 #include "ledctl.h"
 #include "bpm.h"
+#include "buttons.h"
 #include <stdio.h>
 
 #define BUFFER_LENGTH NUM_LEDS
@@ -19,20 +21,20 @@ void output1(void) {
 	int time = 0;
 	//GPIO_DRV_WritePinOutput(kGpioData, 1);
 	GPIO_WR_PSOR(portc_base, 1U << data_pin);
-	for(time = 8; time > 0; time--);
+	for (time = 8; time > 0; time--);
 	//GPIO_DRV_WritePinOutput(kGpioData, 0);
 	GPIO_WR_PCOR(portc_base, 1U << data_pin);
-	for(time = 2; time > 0; time--);
+	for (time = 2; time > 0; time--);
 }
 
 void output0(void) {
 	int time = 0;
 	//GPIO_DRV_WritePinOutput(kGpioData, 1);
 	GPIO_WR_PSOR(portc_base, 1U << data_pin);
-	for(time = 3; time > 0; time--);
+	for (time = 3; time > 0; time--);
 	//GPIO_DRV_WritePinOutput(kGpioData, 0);
 	GPIO_WR_PCOR(portc_base, 1U << data_pin);
-	for(time = 4; time > 0; time--);
+	for (time = 4; time > 0; time--);
 }
 
 void LPTMR0_IRQHandler(void)
@@ -40,8 +42,8 @@ void LPTMR0_IRQHandler(void)
 	int len = BUFFER_LENGTH;
 	while(len) {
 		int mask = 0x800000;
-		while(mask) {
-			int grb = buffer[len-1].b | (buffer[len-1].r << 8) | (buffer[len-1].g << 16);
+		int grb = buffer[len-1].b | (buffer[len-1].r << 8) | (buffer[len-1].g << 16);
+		while (mask) {
 			//if (grb)
 			//	printf("\ngrb value: %08x\r\n", grb);
 			(grb & mask) ? output1() : output0();
@@ -51,48 +53,6 @@ void LPTMR0_IRQHandler(void)
 	}
 	GPIO_DRV_TogglePinOutput(kGpioLED3);
 	LPTMR_DRV_IRQHandler(LPTMR0_IDX);	// Reset timer
-}
-
-void PORTA_IRQHandler(void)
-{
-	if (GPIO_DRV_IsPinIntPending(kGpioSigL)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSigL);
-		ledctl_make_flasher(-1);
-	} else if (GPIO_DRV_IsPinIntPending(kGpioSigR)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSigR);
-		ledctl_make_flasher(1);
-	}
-}
-
-void PORTB_IRQHandler(void)
-{
-	if (GPIO_DRV_IsPinIntPending(kGpioSig)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioSig);
-		ledctl_make_flasher(0);
-	}
-}
-
-void PORTD_IRQHandler(void)
-{
-	static int col;
-	static int state;
-	GPIO_DRV_TogglePinOutput(kGpioLED2);
-	if (GPIO_DRV_IsPinIntPending(kGpioBTN1)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioBTN1);
-		if (state < NUM_RAINBOW_STATES) state++;
-		else state = 0;
-		ledctl_make_swoosh(state);
-	} else if (GPIO_DRV_IsPinIntPending(kGpioBTN2)) {
-		GPIO_SW_DELAY;
-		GPIO_DRV_ClearPinIntFlag(kGpioBTN2);
-		if (col < NUM_COLORS) col++;
-		else col = 0;
-		ledctl_make_cylon(colors[col]);
-	}
 }
 
 int main(void)
@@ -128,17 +88,21 @@ int main(void)
     // Initialize LPTMR
     LPTMR_DRV_Init(LPTMR0_IDX, &lptmr0State, &lptmrConfig);
     // Set timer period for TMR_PERIOD microseconds
-    LPTMR_DRV_SetTimerPeriodUs(LPTMR0_IDX, 100);
+    LPTMR_DRV_SetTimerPeriodUs(LPTMR0_IDX, 1000);
     // Start LPTMR
     LPTMR_DRV_Start(LPTMR0_IDX);
 
 	printf("\nHello World! \r\n");
 
+	PIT_DRV_Init(0, false);
+
+	buttons_init();
 	ledctl_init(buffer);
 	bpm_init(ledctl_update);
-	ledctl_make_swoosh(0);
+	ledctl_make_swoosh();
 
-	while(1) {
+	while (1) {
+		buttons_do_deferred();
 	}
 	return 0;
 }

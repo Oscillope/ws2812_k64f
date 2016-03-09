@@ -2,7 +2,7 @@
 #define LEDCTL_H
 
 #define NUM_LEDS 30
-#define NUM_RAINBOW_STATES 2
+#define NUM_RAINBOW_STATES 3
 #define NUM_COLORS 6
 
 typedef struct {
@@ -36,9 +36,5 @@ struct led_array {
 
 void ledctl_init(rgb *super_buffer);
 void ledctl_update(void);
-void ledctl_make_swoosh(int state);
-void ledctl_make_flasher(int dir);
-void ledctl_make_cylon(rgb color);
-void ledctl_strobe(rgb color);
 
 #endif /* LEDCTL_H */

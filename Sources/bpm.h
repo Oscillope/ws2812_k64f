@@ -15,6 +15,7 @@ struct bpm_dev {
 };
 
 void bpm_update_div(int div);
+void bpm_button_callback(void);
 void bpm_init(void (*callback)(void));
 
 #endif /* BPM_H */

@@ -72,42 +72,42 @@ gpio_input_pin_user_config_t switchPins[] = {
     .pinName = kGpioSigR,
     .config.isPullEnable = true,
     .config.pullSelect = kPortPullUp,
-    .config.isPassiveFilterEnabled = true,
+    .config.isPassiveFilterEnabled = false,
     .config.interrupt = kPortIntFallingEdge
   },
   {
     .pinName = kGpioSigL,
     .config.isPullEnable = true,
     .config.pullSelect = kPortPullUp,
-    .config.isPassiveFilterEnabled = true,
+    .config.isPassiveFilterEnabled = false,
     .config.interrupt = kPortIntFallingEdge
   },
   {
 	.pinName = kGpioSig,
 	.config.isPullEnable = true,
-	.config.pullSelect = kPortPullUp,
-	.config.isPassiveFilterEnabled = true,
-	.config.interrupt = kPortIntFallingEdge
+	.config.pullSelect = kPortPullDown,		// Grounded
+	.config.isPassiveFilterEnabled = false,
+	.config.interrupt = kPortIntDisabled	// Disabled until I get another button
   },
   {
 	.pinName = kGpioBPMBTN,
 	.config.isPullEnable = true,
 	.config.pullSelect = kPortPullUp,
-	.config.isPassiveFilterEnabled = true,
+	.config.isPassiveFilterEnabled = false,
 	.config.interrupt = kPortIntFallingEdge
   },
   {
 	.pinName = kGpioBTN1,
 	.config.isPullEnable = true,
 	.config.pullSelect = kPortPullUp,
-	.config.isPassiveFilterEnabled = true,
+	.config.isPassiveFilterEnabled = false,
 	.config.interrupt = kPortIntFallingEdge
   },
   {
 	.pinName = kGpioBTN2,
 	.config.isPullEnable = true,
 	.config.pullSelect = kPortPullUp,
-	.config.isPassiveFilterEnabled = true,
+	.config.isPassiveFilterEnabled = false,
 	.config.interrupt = kPortIntFallingEdge
   },
   {
