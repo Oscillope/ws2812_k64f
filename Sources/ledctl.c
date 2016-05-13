@@ -244,14 +244,29 @@ void ledctl_make_r_flasher(void)
 	bpm_update_div(1);
 }
 
-void ledctl_strobe(rgb color) {
+void ledctl_strobe(void) {
+	static int col;
+	if (col >= NUM_COLORS) {
+		col = 0;
+	} else {
+		col++;
+	}
+	rgb color = colors[col];
 	int i;
 	for (i = 0; i < array.num_leds; i++) {
 		array.leds[i][0] = color;
 		array.leds[i][1] = (rgb){0, 0, 0};
 	}
 	array.len = 2;
-	bpm_update_div(256);
+	bpm_update_div(32);
+}
+
+void ledctl_switch_strobe(void) {
+	if (!GPIO_DRV_ReadPinInput(kGpioSigL)) {
+		ledctl_strobe();
+	} else {
+		ledctl_make_cylon();
+	}
 }
 
 void ledctl_update(void)
@@ -275,5 +290,5 @@ void ledctl_init(rgb *super_buffer)
 	buttons_reg_callback(ledctl_make_l_flasher, kGpioSigL, BUTTON_CB_SIGL);
 	buttons_reg_callback(ledctl_make_r_flasher, kGpioSigR, BUTTON_CB_SIGR);
 	buttons_reg_callback(ledctl_make_swoosh, kGpioBTN1, BUTTON_CB_BTN1);
-	buttons_reg_callback(ledctl_make_cylon, kGpioBTN2, BUTTON_CB_BTN2);
+	buttons_reg_callback(ledctl_switch_strobe, kGpioBTN2, BUTTON_CB_BTN2);
 }
