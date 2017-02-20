@@ -143,20 +143,25 @@ void ledctl_make_swoosh(void)
 	}
 	switch (state) {
 	case 0:
+	{
 		for (i = 0; i < array.num_leds; i++) {
 			ledctl_make_fade(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 64, i * 4);
 		}
 		array.len = 64;
 		bpm_update_div(64);
 		break;
+	}
 	case 1:
+	{
 		for (i = 0; i < array.num_leds; i++) {
 			ledctl_make_fade_bounce(array.leds[i], (hsv){255, 255, 255}, (hsv){0, 255, 255}, 128, i * 8);
 		}
 		array.len = 128;
 		bpm_update_div(64);
 		break;
+	}
 	case 2:
+	{
 		for(i = 0; i < array.num_leds; i++) {
 			int j;
 			for (j = 0; j < i; j++) {
@@ -175,6 +180,34 @@ void ledctl_make_swoosh(void)
 		array.len = array.num_leds << 1;
 		bpm_update_div(32);
 		break;
+	}
+	case 3:
+	{
+		int i = 0;
+		for (i = 0; i < 3; i++) {
+			int j;
+			for (j = i * (array.num_leds / 3); j < (i + 1) * (array.num_leds / 3); j++) {
+				int k;
+				for (k = 0; k < 3; k++) {
+					switch ((i + k) % 3) {
+					case 0:
+						array.leds[j][k] = (rgb){0xff, 0x00, 0x00};
+						break;
+					case 1:
+						array.leds[j][k] = (rgb){0x00, 0xff, 0x00};
+						break;
+					case 2:
+						array.leds[j][k] = (rgb){0x00, 0x00, 0xff};
+						break;
+					}
+					//array.leds[j][k] = colors[(k + i) % NUM_COLORS];
+				}
+			}
+		}
+		array.len = 3;
+		bpm_update_div(3 >> 1);
+		break;
+	}
 	}
 }
 
@@ -244,7 +277,8 @@ void ledctl_make_r_flasher(void)
 	bpm_update_div(1);
 }
 
-void ledctl_strobe(void) {
+void ledctl_strobe(void)
+{
 	static int col;
 	if (col >= NUM_COLORS) {
 		col = 0;
@@ -261,7 +295,8 @@ void ledctl_strobe(void) {
 	bpm_update_div(32);
 }
 
-void ledctl_switch_strobe(void) {
+void ledctl_switch_strobe(void)
+{
 	if (!GPIO_DRV_ReadPinInput(kGpioSigL)) {
 		ledctl_strobe();
 	} else {

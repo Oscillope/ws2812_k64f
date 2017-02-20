@@ -11,7 +11,8 @@
 #include "buttons.h"
 #include <stdio.h>
 
-#define BUFFER_LENGTH NUM_LEDS
+#define BUFFER_LENGTH	NUM_LEDS
+#define DBG_INT			0
 
 GPIO_Type *portc_base;
 uint32_t data_pin;
@@ -42,7 +43,7 @@ void LPTMR0_IRQHandler(void)
 	int len = BUFFER_LENGTH;
 	while(len) {
 		int mask = 0x800000;
-		int grb = buffer[len-1].b | (buffer[len-1].r << 8) | (buffer[len-1].g << 16);
+		int grb = (buffer[len-1].b >> DBG_INT) | ((buffer[len-1].r >> DBG_INT) << 8) | ((buffer[len-1].g >> DBG_INT) << 16);
 		while (mask) {
 			//if (grb)
 			//	printf("\ngrb value: %08x\r\n", grb);

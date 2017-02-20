@@ -8,6 +8,8 @@ enum button_cb_type {
 	BUTTON_CB_SIGR,
 	BUTTON_CB_BTN1,
 	BUTTON_CB_BTN2,
+	BUTTON_CB_SW2,
+	BUTTON_CB_SW3,
 	NUM_BTN_CB
 };
 void buttons_reg_callback(void (*callback)(void), int button, enum button_cb_type type);

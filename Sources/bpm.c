@@ -85,6 +85,11 @@ void bpm_update_div(int div)
 	}
 }
 
+void bpm_double_time(void)
+{
+	bpm_update_div(dev.div << 1);
+}
+
 // Define device configuration.
 const pit_user_config_t pitInit = {
     .isInterruptEnabled = true, // Enable timer interrupt.
@@ -102,4 +107,5 @@ void bpm_init(void (*callback)(void))
 	PIT_DRV_StartTimer(0, 0);
 	PIT_DRV_InitChannel(0, 1, &pitInit);
 	buttons_reg_callback(bpm_button_callback, kGpioBPMBTN, BUTTON_CB_BPM);
+	buttons_reg_callback(bpm_double_time, kGpioSW3, BUTTON_CB_SW3);
 }

@@ -52,6 +52,10 @@ void PORTA_IRQHandler(void)
 		debounce = &callbacks[BUTTON_CB_SIGL];
 	} else if (GPIO_DRV_IsPinIntPending(kGpioSigR)) {
 		debounce = &callbacks[BUTTON_CB_SIGR];
+	} else if (GPIO_DRV_IsPinIntPending(kGpioSW2)) {
+		debounce = &callbacks[BUTTON_CB_SW2];
+	} else if (GPIO_DRV_IsPinIntPending(kGpioSW3)) {
+		debounce = &callbacks[BUTTON_CB_SW3];
 	}
 	PIT_DRV_StartTimer(0, 2);
 }

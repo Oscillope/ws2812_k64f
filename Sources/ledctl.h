@@ -2,7 +2,7 @@
 #define LEDCTL_H
 
 #define NUM_LEDS 30
-#define NUM_RAINBOW_STATES 3
+#define NUM_RAINBOW_STATES 4
 #define NUM_COLORS 7
 
 typedef struct {
@@ -16,6 +16,16 @@ typedef struct {
 	unsigned char s;
 	unsigned char v;
 } hsv;
+
+enum color_sel {
+	RED,
+	GREEN,
+	BLUE,
+	PURPLE,
+	CYAN,
+	AMBER,
+	WHITE
+};
 
 const rgb colors[] = {
 		{0xff, 0x00, 0x00},	//Red
